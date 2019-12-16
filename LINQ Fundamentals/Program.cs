@@ -10,9 +10,6 @@ namespace LINQ_Fundamentals
     {
         static void Main(string[] args)
         {
-            var beka = "HEHE";
-            Console.WriteLine(beka);
-            Console.ReadKey();
         }
     }
 }
