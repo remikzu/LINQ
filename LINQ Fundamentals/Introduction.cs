@@ -12,14 +12,14 @@ namespace LINQ_Fundamentals
     /// </summary>
     class Introduction
     {
-        static void Main(string[] args)
+        /*static void Main(string[] args)
         {
             string path = @"C:\windows";
             ShowLargeFilesWithoutLinq(path);
             Console.WriteLine("***");
             ShowLargeFilesWithLinq(path);
             Console.ReadKey();
-        }
+        }*/
 
         private static void ShowLargeFilesWithLinq(string path)
         {
