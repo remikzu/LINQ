@@ -55,7 +55,6 @@ namespace Cars
                         where line.Length > 1
                         select Car.ParseFromCsv(line);*/
 
-            //return query.ToList();
 
             var query = File.ReadAllLines(path)
                        .Skip(1)
