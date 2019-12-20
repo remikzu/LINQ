@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,17 +14,37 @@ namespace Cars
         {
             var cars = ProcessFile("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
 
-            var query = cars.OrderByDescending(c => c.Combined)
-                            .ThenBy(c => c.Name);
+            var query = cars.Where(c => c.Manufacturer == "BMW" && c.Year == 2016)
+                            .OrderByDescending(c => c.Combined)
+                            .ThenBy(c => c.Name)
+                            .Select(c => c);
 
             var query2 = from car in cars
+                         where car.Manufacturer == "BMW" && car.Year == 2016
                          orderby car.Combined descending, car.Name ascending
-                         select car;
-                         
+                         select new
+                         {
+                             car.Manufacturer,
+                             car.Name,
+                             car.Combined
+                         };
 
-            foreach (var car in query.Take(10))
+            /*var top = cars
+                            .OrderByDescending(c => c.Combined)
+                            .ThenBy(c => c.Name)
+                            .Select(c => c)
+                            .FirstOrDefault(c => c.Manufacturer == "BMW" && c.Year == 2016);*/
+
+            var result = cars.Select(c => new
             {
-                Console.WriteLine($"{car.Name} : {car.Combined}");
+                c.Manufacturer,
+                c.Name,
+                c.Combined
+            });
+
+            foreach (var car in result.Take(10))
+            {
+                Console.WriteLine($"{car.Manufacturer} {car.Name} : {car.Combined}");
             }
         }
 
@@ -36,11 +57,35 @@ namespace Cars
 
             //return query.ToList();
 
-            return File.ReadAllLines(path)
+            var query = File.ReadAllLines(path)
                        .Skip(1)
                        .Where(line => line.Length > 1)
-                       .Select(Car.ParseFromCsv)
-                       .ToList();
+                       .ToCar();
+
+            return query.ToList();
+        }
+    }
+
+    public static class CarExtensions
+    {
+        public static IEnumerable<Car> ToCar(this IEnumerable<string> source)
+        {
+            foreach (var line in source)
+            {
+                var columns = line.Split(',');
+
+                yield return new Car
+                {
+                    Year = int.Parse(columns[0]),
+                    Manufacturer = columns[1],
+                    Name = columns[2],
+                    Displacement = double.Parse(columns[3], CultureInfo.InvariantCulture),
+                    Cylinders = int.Parse(columns[4]),
+                    City = int.Parse(columns[5]),
+                    Highway = int.Parse(columns[6]),
+                    Combined = int.Parse(columns[7])
+                };
+            }
         }
     }
 }
