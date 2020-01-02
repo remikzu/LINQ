@@ -27,7 +27,8 @@ namespace Features
             IEnumerable<Employee> developers = new Employee[]
             {
                 new Employee { Id = 1, Name = "Remigiusz"},
-                new Employee { Id = 2, Name = "Artur"}
+                new Employee { Id = 2, Name = "Artur"},
+                new Employee { Id = 3, Name = "Cokolwiek"}
             };
 
             IEnumerable<Employee> sales = new List<Employee>()

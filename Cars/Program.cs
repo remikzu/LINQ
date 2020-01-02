@@ -42,10 +42,18 @@ namespace Cars
                 c.Combined
             });
 
-            foreach (var car in result.Take(10))
+            var result2 = cars.SelectMany(c => c.Name)
+                              .OrderBy(c => c);
+
+            foreach (var character in result2)
+            {
+                Console.WriteLine(character);
+            }
+
+            /*foreach (var car in result.Take(10))
             {
                 Console.WriteLine($"{car.Manufacturer} {car.Name} : {car.Combined}");
-            }
+            }*/
         }
 
         private static List<Car> ProcessFile(string path)
