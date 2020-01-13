@@ -13,6 +13,7 @@ namespace Cars
         static void Main(string[] args)
         {
             var cars = ProcessFile("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
+            var manufacturers = ProcessManufacturers("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\manufacturers.csv");
 
             var query = cars.Where(c => c.Manufacturer == "BMW" && c.Year == 2016)
                             .OrderByDescending(c => c.Combined)
@@ -20,14 +21,36 @@ namespace Cars
                             .Select(c => c);
 
             var query2 = from car in cars
-                         where car.Manufacturer == "BMW" && car.Year == 2016
+                         join manufacturer in manufacturers 
+                         on new { car.Manufacturer, car.Year } 
+                         equals 
+                         new
+                         {
+                             Manufacturer = manufacturer.Name, manufacturer.Year
+                         }
                          orderby car.Combined descending, car.Name ascending
                          select new
                          {
-                             car.Manufacturer,
+                             manufacturer.Headquarters,
                              car.Name,
                              car.Combined
                          };
+
+            var query3 =
+                cars.Join(manufacturers,
+                            c => new { c.Manufacturer, c.Year },
+                            m => new
+                            {
+                                Manufacturer = m.Name,
+                                m.Year
+                            }, (c, m) => new
+                            {
+                                m.Headquarters,
+                                c.Name,
+                                c.Combined
+                            })
+                .OrderByDescending(c => c.Combined)
+                .ThenBy(c => c.Name);
 
             /*var top = cars
                             .OrderByDescending(c => c.Combined)
@@ -35,25 +58,31 @@ namespace Cars
                             .Select(c => c)
                             .FirstOrDefault(c => c.Manufacturer == "BMW" && c.Year == 2016);*/
 
-            var result = cars.Select(c => new
-            {
-                c.Manufacturer,
-                c.Name,
-                c.Combined
-            });
+            /*var result2 = cars.SelectMany(c => c.Name)
+                              .OrderBy(c => c);*/
 
-            var result2 = cars.SelectMany(c => c.Name)
-                              .OrderBy(c => c);
-
-            foreach (var character in result2)
+            foreach (var car in query3.Take(10))
             {
-                Console.WriteLine(character);
+                Console.WriteLine($"{car.Headquarters} {car.Name} : {car.Combined}");
             }
+        }
 
-            /*foreach (var car in result.Take(10))
-            {
-                Console.WriteLine($"{car.Manufacturer} {car.Name} : {car.Combined}");
-            }*/
+        private static List<Manufacturer> ProcessManufacturers(string path)
+        {
+            var query =
+                File.ReadAllLines(path)
+                    .Where(line => line.Length > 1)
+                    .Select(l =>
+                    {
+                        var columns = l.Split(',');
+                        return new Manufacturer
+                        {
+                            Name = columns[0],
+                            Headquarters = columns[1],
+                            Year = int.Parse(columns[2])
+                        };
+                    });
+            return query.ToList();
         }
 
         private static List<Car> ProcessFile(string path)
