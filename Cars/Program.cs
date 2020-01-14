@@ -15,7 +15,68 @@ namespace Cars
             var cars = ProcessFile("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
             var manufacturers = ProcessManufacturers("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\manufacturers.csv");
 
-            var query = cars.Where(c => c.Manufacturer == "BMW" && c.Year == 2016)
+            /*var query =
+                from car in cars
+                group car by car.Manufacturer.ToUpper() into manufacturer
+                orderby manufacturer.Key
+                select manufacturer;*/
+
+            /*var query =
+                from manufacturer in manufacturers
+                join car in cars on manufacturer.Name equals car.Manufacturer
+                into carGroup
+                select new
+                {
+                    Manufacturer = manufacturer,
+                    Cars = carGroup
+                } into result
+                group result by result.Manufacturer.Headquarters;*/
+
+            var query =
+                from car in cars
+                group car by car.Manufacturer into carGroup
+                select new
+                {
+                    Name = carGroup.Key,
+                    Max = carGroup.Max(c => c.Combined),
+                    Min = carGroup.Min(c => c.Combined),
+                    Avg = carGroup.Average(c => c.Combined)
+                } into result
+                orderby result.Max descending
+                select result;
+
+            /*var query2 =
+                cars.GroupBy(c => c.Manufacturer.ToUpper())
+                    .OrderBy(g => g.Key);*/
+
+            var query2 =
+                manufacturers.GroupJoin(cars, m => m.Name, c => c.Manufacturer, (m, g) =>
+                new
+                {
+                    Manufacturer = m,
+                    Cars = g
+                }).GroupBy(m => m.Manufacturer.Headquarters);
+
+            /*foreach (var group in query)
+            {
+                //Console.WriteLine($"{result.Key} has {result.Count()} cars");
+                Console.WriteLine($"{group.Key}");
+                foreach (var car in group.SelectMany(g => g.Cars)
+                                         .OrderByDescending(c => c.Combined).Take(3))
+                {
+                    Console.WriteLine($"\t{car.Name} : {car.Combined}");
+                }
+            }*/
+
+            foreach (var result in query)
+            {
+                Console.WriteLine($"{result.Name}");
+                Console.WriteLine($"\t Max: {result.Max}");
+                Console.WriteLine($"\t Min: {result.Min}");
+                Console.WriteLine($"\t Avg: {result.Avg}");
+            }
+
+            /*var query = cars.Where(c => c.Manufacturer == "BMW" && c.Year == 2016)
                             .OrderByDescending(c => c.Combined)
                             .ThenBy(c => c.Name)
                             .Select(c => c);
@@ -50,7 +111,7 @@ namespace Cars
                                 c.Combined
                             })
                 .OrderByDescending(c => c.Combined)
-                .ThenBy(c => c.Name);
+                .ThenBy(c => c.Name);*/
 
             /*var top = cars
                             .OrderByDescending(c => c.Combined)
@@ -61,10 +122,7 @@ namespace Cars
             /*var result2 = cars.SelectMany(c => c.Name)
                               .OrderBy(c => c);*/
 
-            foreach (var car in query3.Take(10))
-            {
-                Console.WriteLine($"{car.Headquarters} {car.Name} : {car.Combined}");
-            }
+
         }
 
         private static List<Manufacturer> ProcessManufacturers(string path)
