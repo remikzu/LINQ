@@ -49,13 +49,30 @@ namespace Cars
                 cars.GroupBy(c => c.Manufacturer.ToUpper())
                     .OrderBy(g => g.Key);*/
 
-            var query2 =
+            /*var query2 =
                 manufacturers.GroupJoin(cars, m => m.Name, c => c.Manufacturer, (m, g) =>
                 new
                 {
                     Manufacturer = m,
                     Cars = g
-                }).GroupBy(m => m.Manufacturer.Headquarters);
+                }).GroupBy(m => m.Manufacturer.Headquarters);*/
+
+            var query2 =
+                cars.GroupBy(c => c.Manufacturer)
+                    .Select(g =>
+                    {
+                        var results = g.Aggregate(new CarStatistics(),
+                                        (acc, c) => acc.Accumulate(c),
+                                        acc => acc.Compute());
+                        return new
+                        {
+                            Name = g.Key,
+                            Avg = results.Average,
+                            Min = results.Min,
+                            Max = results.Max
+                        };
+                    })
+                    .OrderByDescending(r => r.Max);
 
             /*foreach (var group in query)
             {
@@ -67,8 +84,8 @@ namespace Cars
                     Console.WriteLine($"\t{car.Name} : {car.Combined}");
                 }
             }*/
-
-            foreach (var result in query)
+            
+            foreach (var result in query2)
             {
                 Console.WriteLine($"{result.Name}");
                 Console.WriteLine($"\t Max: {result.Max}");
