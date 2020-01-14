@@ -11,7 +11,7 @@ namespace Features
         static void Main(string[] args)
         {
 
-            /*Func<int, int> square = x => x * x;
+            Func<int, int> square = x => x * x;
             Func<int, int, int> add = (x, y) =>
             {
                 int temp = x + y;
@@ -22,7 +22,7 @@ namespace Features
 
             write(square(add(3, 5)));
 
-            Console.WriteLine(square(add(3, 5)));*/
+            Console.WriteLine(square(add(3, 5)));
 
             IEnumerable<Employee> developers = new Employee[]
             {

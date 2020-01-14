@@ -8,6 +8,7 @@ namespace Queries
 {
     class Program
     {
+
         static void Main(string[] args)
         {
             var numbers = MyLinq.Random().Where(n => n < 0.5).Take(10);
@@ -15,6 +16,9 @@ namespace Queries
             {
                 Console.WriteLine(number);
             }
+
+            
+
 
             var movies = new List<Movie>
             {

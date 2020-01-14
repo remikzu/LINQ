@@ -28,6 +28,8 @@ namespace LINQ_Fundamentals
                         select file;
 
             //or
+
+
             var query2 = new DirectoryInfo(path).GetFiles()
                                 .OrderByDescending(f => f.Length)
                                 .Take(5);
