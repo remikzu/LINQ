@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,39 +13,50 @@ namespace Cars
     {
         static void Main(string[] args)
         {
-            var cars = ProcessFile("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
-            var manufacturers = ProcessManufacturers("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\manufacturers.csv");
+            CreateXml();
+            QueryXml();
+        }
 
-            var query =
-                from manufacturer in manufacturers
-                join car in cars on manufacturer.Name equals car.Manufacturer
-                into carGroup
-                select new
-                {
-                    Manufacturer = manufacturer,
-                    Cars = carGroup
-                } into result
-                group result by result.Manufacturer.Headquarters;
+        private static void QueryXml()
+        {
+            var document = XDocument.Load("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuelattribute.xml");
 
-            var query2 =
-                manufacturers.GroupJoin(cars, m => m.Name, c => c.Manufacturer, (m, g) =>
-                new
-                {
-                    Manufacturer = m,
-                    Cars = g
-                })
-                .GroupBy(m => m.Manufacturer.Headquarters);
+            var querySyntax =
+                from element in document.Element("Cars").Elements("Car")
+                where element.Attribute("Manufacturer")?.Value == "BMW"
+                select element.Attribute("Name").Value;
 
-            foreach (var group in query)
+            var methodSyntax =
+                document.Element("Cars").Elements("Car")
+                .Where(d => d.Attribute("Manufacturer").Value == "BMW")
+                .Select(d => d.Attribute("Name").Value);
+
+            foreach (var name in querySyntax)
             {
-                Console.WriteLine($"{group.Key}");
-                foreach (var car in group.SelectMany(g => g.Cars).OrderByDescending(c => c.Combined).Take(3))
-                {
-                    Console.WriteLine($"\t{car.Name} : {car.Combined}");
-                }
+                Console.WriteLine(name);
             }
+        }
 
-            
+
+
+        private static void CreateXml()
+        {
+            var records = ProcessCars("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
+            //var manufacturers = ProcessManufacturers("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\manufacturers.csv");
+
+            var document = new XDocument();
+            var cars = new XElement("Cars");
+
+            var elements =
+                from record in records
+                select new XElement("Car",
+                            new XAttribute("Name", record.Name),
+                            new XAttribute("Combined", record.Combined),
+                            new XAttribute("Manufacturer", record.Manufacturer));
+
+            cars.Add(elements);
+            document.Add(cars);
+            document.Save("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuelattribute.xml");
         }
 
         private static List<Manufacturer> ProcessManufacturers(string path)
@@ -65,7 +77,7 @@ namespace Cars
             return query.ToList();
         }
 
-        private static List<Car> ProcessFile(string path)
+        private static List<Car> ProcessCars(string path)
         {
 
             /*var query = from line in File.ReadAllLines(path).Skip(1)
