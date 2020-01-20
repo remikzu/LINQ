@@ -19,16 +19,18 @@ namespace Cars
 
         private static void QueryXml()
         {
+            var ns = (XNamespace)"http://pluralsight.com/cars/2020";
+            var ex = (XNamespace)"http://pluralsight.com/car/2020/ex";
             var document = XDocument.Load("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuelattribute.xml");
 
             var querySyntax =
-                from element in document.Element("Cars").Elements("Car")
+                from element in document.Element(ns + "Cars")?.Elements(ex + "Car") ?? Enumerable.Empty<XElement>()
                 where element.Attribute("Manufacturer")?.Value == "BMW"
                 select element.Attribute("Name").Value;
 
             var methodSyntax =
-                document.Element("Cars").Elements("Car")
-                .Where(d => d.Attribute("Manufacturer").Value == "BMW")
+                document.Element(ns + "Cars")?.Elements(ex + "Car")
+                .Where(d => d.Attribute("Manufacturer")?.Value == "BMW")
                 .Select(d => d.Attribute("Name").Value);
 
             foreach (var name in querySyntax)
@@ -44,17 +46,23 @@ namespace Cars
             var records = ProcessCars("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuel.csv");
             //var manufacturers = ProcessManufacturers("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\manufacturers.csv");
 
+            var ns = (XNamespace)"http://pluralsight.com/cars/2020";
+            var ex = (XNamespace)"http://pluralsight.com/car/2020/ex";
+
             var document = new XDocument();
-            var cars = new XElement("Cars");
+            var cars = new XElement(ns + "Cars");
 
             var elements =
                 from record in records
-                select new XElement("Car",
+                select new XElement(ex + "Car",
                             new XAttribute("Name", record.Name),
                             new XAttribute("Combined", record.Combined),
                             new XAttribute("Manufacturer", record.Manufacturer));
 
             cars.Add(elements);
+
+            cars.Add(new XAttribute(XNamespace.Xmlns + "ex", ex));
+
             document.Add(cars);
             document.Save("C:\\Users\\remik\\OneDrive\\Pulpit\\Pluralsight\\LINQ Fundamentals\\Cars\\fuelattribute.xml");
         }
